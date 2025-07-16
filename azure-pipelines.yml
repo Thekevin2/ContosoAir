@@ -1,42 +1,51 @@
 pool: Default
 
 trigger:
-- master
+  - master
 
 steps:
-- task: PublishTestResults@2
-  displayName: 'Publish Test Results'
-  condition: succeededOrFailed()
-  inputs:
-    testResultsFiles: '$(System.DefaultWorkingDirectory)/test-report.xml'
+  - task: PublishTestResults@2
+    displayName: 'Publish Test Results'
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFiles: '$(System.DefaultWorkingDirectory)/test-report.xml'
 
-- task: PublishCodeCoverageResults@1
-  displayName: 'Publish Code Coverage'
-  condition: eq(variables['Build.SourceBranchName'], 'master')
-  inputs:
-    codeCoverageTool: Cobertura
-    summaryFileLocation: '$(System.DefaultWorkingDirectory)/coverage/*coverage.xml'
-    reportDirectory: '$(System.DefaultWorkingDirectory)/coverage'
+  - task: PublishCodeCoverageResults@1
+    displayName: 'Publish Code Coverage'
+    condition: eq(variables['Build.SourceBranchName'], 'master')
+    inputs:
+      codeCoverageTool: Cobertura
+      summaryFileLocation: '$(System.DefaultWorkingDirectory)/coverage/*coverage.xml'
+      reportDirectory: '$(System.DefaultWorkingDirectory)/coverage'
 
-- task: ArchiveFiles@2
-  displayName: 'Archive sources'
-  inputs:
-    rootFolderOrFile: '$(Build.SourcesDirectory)'
-    includeRootFolder: false
-    archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
-    replaceExistingArchive: true
+  - task: ArchiveFiles@2
+    displayName: 'Archive sources'
+    inputs:
+      rootFolderOrFile: '$(Build.SourcesDirectory)'
+      includeRootFolder: false
+      archiveType: 'zip'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+      replaceExistingArchive: testResultsFiles
 
-- task: CopyFiles@2
-  displayName: 'Copy ARM templates'
-  inputs:
-    SourceFolder: 'deployment'
-    Contents: '*.json'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)/Templates'
+  - task: CopyFiles@2
+    displayName: 'Copy ARM templates'
+    inputs:
+      SourceFolder: 'deployment'
+      Contents: '*.json'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)/Templates'
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact: drop'
-  inputs:
-    pathToPublish: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
-    artifactName: 'drop'
-    publishLocation: 'Container'
+  # Publish the 'drop' artifact, which includes the archived zip file
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: drop'
+    inputs:
+      pathToPublish: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+      artifactName: 'drop'
+      publishLocation: 'Container'
+
+  # Publish the Templates folder (this is your ARM template folder)
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: Templates'
+    inputs:
+      pathToPublish: '$(Build.ArtifactStagingDirectory)/Templates'
+      artifactName: 'Templates'
+      publishLocation: 'Container'
