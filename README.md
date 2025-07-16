@@ -1,3 +1,4 @@
+[![Build Status](https://dev.azure.com/ecouncillabs/GitIntegration/_apis/build/status%2FThekevin2.ContosoAir?branchName=master)](https://dev.azure.com/ecouncillabs/GitIntegration/_build/latest?definitionId=73&branchName=master)
 # This project is retired, archived, and no longer supported. You are welcome to continue to use and fork the repository.
 
 
